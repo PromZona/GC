@@ -19,8 +19,8 @@ namespace GarbageCollector
         bool flag = false;
     };
 
-    static IPtr root;
-    static IPtr gcnull;
+    static IPtr* root;
+    static IPtr* gcnull;
 
     template<class T>
     class ptr : public  IPtr
@@ -39,7 +39,6 @@ namespace GarbageCollector
 
         ~ptr()
         {
-            std::cout << "delete ptr\n";
         }
 
         operator T* ()
@@ -71,7 +70,8 @@ namespace GarbageCollector
         {
             if (other == nullptr)
             {
-                this->parent = &gcnull;
+                parent = gcnull;
+                // (*this).parent = &gcnull;
                 return *this;
             }
             object = other;
@@ -107,7 +107,8 @@ namespace GarbageCollector
         void Sweep();
         size_t maxSize; // bytes
         size_t currentSize; // bytes
-        std::vector<IPtr> allocs;
+        // std::vector<IPtr> allocs;
+        std::vector<IPtr*> allocs;
     };
 
     template<class T>
@@ -121,9 +122,10 @@ namespace GarbageCollector
 
         pointer->gc = this;
 
-        pointer->parent = &root;
+        pointer->parent = root;
 
-        allocs.push_back((IPtr)*pointer);
+        // allocs.push_back((IPtr)*pointer);
+        allocs.push_back((IPtr*)pointer);
         currentSize += size;
         return;
     }
@@ -141,7 +143,8 @@ namespace GarbageCollector
 
         pointer->parent = parent;
 
-        allocs.push_back((IPtr)*pointer);
+        // allocs.push_back((IPtr)*pointer);
+        allocs.push_back((IPtr*)pointer);
         currentSize += size;
         return;
     }

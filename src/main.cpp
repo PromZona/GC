@@ -18,16 +18,68 @@ public:
     int value;
     ptr<B> object1;
     ptr<B> object2;
+
+    void print()
+    {
+        std::cout << "value: " << value << std::endl;
+    }
 };
 
 
 int main()
 {
+    /* ----------------------
+        Инициализация
+    -------------------------*/
     GC gc;
     gc.init();
 
+
+    /* ----------------------
+        Объявление
+    -------------------------*/
+    ptr<int> testInt;
+    ptr<double> testDouble;
+    gc.Alloc(&testInt);
+    gc.Alloc(&testDouble);
+    *testInt = 42; // Good number
+    *testDouble = 43; // Just number
+    std::cout << "testInt = " << *testInt << std::endl;
+    std::cout << "testDouble = " << *testDouble<< std::endl;
+
+
+    /* ----------------------
+        Информация о выделенной памяти
+    -------------------------*/
     gc.PrintMemAllocs();
 
+    
+    /* ----------------------
+        Пример с контейнерами
+    -------------------------*/
+    /**/
+    std::vector<ptr<A>> datas;
+    datas.reserve(20);
+    for (int i = 0; i < 20; i++)
+    {
+        ptr<A> n;
+        gc.Alloc<A>(&n);
+        n->value = i;
+        datas.push_back(n);
+    }
+    gc.PrintMemAllocs();
+
+    for (auto d : datas)
+    {
+        ((A*)d.object)->print();
+    }
+    
+    
+
+    /* ----------------------
+        Самое интересное
+        вложенные указатели
+    -------------------------*/
     ptr<A> p;
     gc.Alloc<A>(&p);
     p->value = 100;
@@ -44,32 +96,6 @@ int main()
 
     gc.Collect();
 
-    /* 
-    std::vector<ptr<A>> datas;
-    datas.reserve(20);
-    for (int i = 0; i < 20; i++)
-    {
-        ptr<A> p;
-        A* str = (A*)gc.Alloc(sizeof(A));
-        p.object = (void*)str;
-        str->a = 1;
-        str->b = 2;
-        str->c = 3;
-        str->d = 4;
-        datas.push_back(p);
-    }
-    gc.PrintMemAllocs();
-    
-    std::vector<ptr<A>>::iterator it = datas.begin() + 10;
-    ptr<A> p1 = datas.at(10);
-    std::vector<ptr<A>>::iterator it1 = datas.erase(it);
-    gc.PrintMemAllocs();
-
-    for (auto d : datas)
-    {
-        ((A*)d.object)->print();
-    }
-    */
 
     return 0;
 }

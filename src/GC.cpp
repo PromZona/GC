@@ -16,13 +16,13 @@ size_t GC::GetMaxSize()
 
 void GC::DeAlloc(IPtr p)
 {
-    for (std::vector<IPtr>::iterator it = allocs.begin(); it != allocs.end(); it++)
+    for (std::vector<IPtr*>::iterator it = allocs.begin(); it != allocs.end(); it++)
     {
-        if (it->object == p.object)
+        if ((*it)->object == p.object)
         {
             std::cout << "hit\n";
             delete p.object;
-            currentSize -= it->size;
+            currentSize -= (*it)->size;
             it = allocs.erase(it);
         }
     }
@@ -34,10 +34,10 @@ void GC::PrintMemAllocs()
     std::cout << "\tcurrent size - " << currentSize << "; objects - " << allocs.size() << std::endl;
     for (int i = 0; i < allocs.size(); i++)
     {
-        std::cout << "\t" << allocs[i].object << ": " << allocs[i].size << " byte; parent: ";
-        if (allocs[i].parent != nullptr)
+        std::cout << "\t" << allocs[i]->object << ": " << allocs[i]->size << " byte; parent: ";
+        if (allocs[i]->parent != nullptr)
         {
-            std::cout << allocs[i].parent->object << std::endl;
+            std::cout << allocs[i]->parent->object << std::endl;
         }
         else
         {
@@ -54,6 +54,8 @@ size_t GC::GetCurrentSize()
 void GC::init()
 {
     currentSize = 0;
+    root = new IPtr();
+    gcnull = new IPtr();
 }
 
 void GC::Collect()
@@ -66,14 +68,14 @@ void GC::Mark()
 {
     for (auto it : allocs)
     {
-        it.flag = false;
+        it->flag = false;
     }
 
     for (auto it : allocs)
     {
-        if (it.parent != &gcnull || it.parent == &root)
+        if (it->parent != gcnull || it->parent == root)
         {
-            it.flag = true;
+            it->flag = true;
         }
     }
 
@@ -81,8 +83,8 @@ void GC::Mark()
     for (auto it : allocs)
     {
         int a = 0;
-        if (it.flag) a = 1;
-        std::cout << it.object << ": " << a << std::endl;
+        if (it->flag) a = 1;
+        std::cout << it->object << ": " << a << std::endl;
     }
 }
 void GC::Sweep()
